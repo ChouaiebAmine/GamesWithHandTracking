@@ -38,13 +38,13 @@ print(squares)
 # Hand detection
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
-hand = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+hand = mp_hands.Hands(min_detection_confidence=0.3, min_tracking_confidence=0.3)
 
 # Hand coordinates list
 lml = []
 xl = []
 yl = []
-status=""
+status = ""
 while start:
     # Get Events
     for event in pygame.event.get():
@@ -68,8 +68,10 @@ while start:
     res = hand.process(imgRGB)
     if res.multi_hand_landmarks:
         for hand_landmarks in res.multi_hand_landmarks:
-            if status=="open":
-                mp_drawing.draw_landmarks(imgRGB, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            if status == "open":
+                mp_drawing.draw_landmarks(
+                    imgRGB, hand_landmarks, mp_hands.HAND_CONNECTIONS
+                )
 
     # Drawing the processed frame on screen
     frame = pygame.surfarray.make_surface(imgRGB).convert()
@@ -78,11 +80,11 @@ while start:
 
     # Hand coordination stuff
     if res.multi_hand_landmarks != None:
-        # Seeing if the hand is closed or open by checking if the top point (12) of the middle finger
-        # is below the middle point (11) of the middle finger
+        # Seeing if the hand is closed or open by checking if the tip (point 8) of the index finger
+        # is below the dip (point 7) of the middle finger
         for lm in res.multi_hand_landmarks:
-            xcl1, ycl1 = hand_landmarks.landmark[11].x, hand_landmarks.landmark[11].y
-            xcl2, ycl2 = hand_landmarks.landmark[12].x, hand_landmarks.landmark[12].y
+            xcl1, ycl1 = hand_landmarks.landmark[7].x, hand_landmarks.landmark[7].y
+            xcl2, ycl2 = hand_landmarks.landmark[8].x, hand_landmarks.landmark[8].y
         if ycl2 > ycl1:
             status = "closed"
         else:
@@ -94,7 +96,7 @@ while start:
             lml.append([id, xc, yc])
             # xl.append(xc)
             # yl.append(yc)
-        print(lml[::-1][0][1], lml[::-1][0][2]," ", status, " ", squares)
+        print(lml[::-1][0][1], lml[::-1][0][2], " ", status, " ", squares)
 
     # Display number squares
     for x in squares:
@@ -109,7 +111,7 @@ while start:
             window.blit(squareText, v)
 
     # Score
-    scoreText = font.render("score : " + str(score) + " " +status, True, (0, 0, 255))
+    scoreText = font.render("score : " + str(score) + " " + status, True, (0, 0, 255))
     window.blit(scoreText, (0, 0))
 
     # Update Display
