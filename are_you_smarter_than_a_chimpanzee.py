@@ -39,12 +39,12 @@ print(squares)
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hand = mp_hands.Hands(min_detection_confidence=0.3, min_tracking_confidence=0.3)
-
+xcl1, ycl1, xcl2, ycl2 = 0, 0, 0, 0
 # Hand coordinates list
 lml = []
 xl = []
 yl = []
-status = ""
+status = "closed"
 while start:
     # Get Events
     for event in pygame.event.get():
@@ -96,19 +96,30 @@ while start:
             lml.append([id, xc, yc])
             # xl.append(xc)
             # yl.append(yc)
-        print(lml[::-1][0][1], lml[::-1][0][2], " ", status, " ", squares)
-
+            # print(int(xcl2 * height), int(ycl2 * width), " ", status, " ", squares)
     # Display number squares
     for x in squares:
         for k, v in x.items():
+            print(
+                int(xcl2 * height),
+                int(ycl2 * width),
+                " ",
+                list(squares[0].values())[0][0],
+                list(squares[0].values())[0][1],
+            )
+            if (
+                v[0] <= xcl2 * height <= v[0] + 20 or v[1] <= ycl2 * width <= v[1] + 20
+            ) and status == "open":
+                print("removed", x)
+                squares.remove(x)
             pygame.draw.rect(
                 surface=window,
                 color="white",
-                rect=pygame.Rect(v[0], v[1], 20, 20),
+                rect=pygame.Rect(v[1], v[0], 20, 20),
                 border_radius=2,
             )
             squareText = font.render(str(k), True, (0, 0, 255))
-            window.blit(squareText, v)
+            window.blit(squareText, (v[1], v[0]))
 
     # Score
     scoreText = font.render("score : " + str(score) + " " + status, True, (0, 0, 255))
