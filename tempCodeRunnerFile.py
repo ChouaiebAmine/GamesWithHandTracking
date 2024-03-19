@@ -1,0 +1,1 @@
+        for hand_landmarks in res.multi_hand_landmarks:
