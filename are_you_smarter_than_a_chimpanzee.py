@@ -37,6 +37,11 @@ mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hand = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
+# Hand coordinates list
+lml=[]
+xl=[]
+yl=[]
+
 while start:
     # Get Events
     for event in pygame.event.get():
@@ -62,12 +67,22 @@ while start:
     if res.multi_hand_landmarks:
         for hand_landmarks in res.multi_hand_landmarks:
             mp_drawing.draw_landmarks(imgRGB, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-    #drawing the processed frame on screen
+    
+    # Drawing the processed frame on screen
     frame = pygame.surfarray.make_surface(imgRGB).convert()
     frame = pygame.transform.flip(frame, False, False)
     window.blit(frame, (0, 0))
+    
+    # Printing the hand's coodrinates
     if res.multi_hand_landmarks!=None:
-        print(res.multi_hand_landmarks[0].landmark[8])
+        for id, lm in enumerate(res.multi_hand_landmarks[0].landmark):
+            h, w, _ = img.shape
+            xc, yc = int(lm.y * h), int(lm.x * w)
+            lml.append([id, xc, yc])
+            #xl.append(xc)
+            #yl.append(yc)
+        print(lml[::-1][0][1],lml[::-1][1][2])
+    
     # Display number squares
     for x in squares:
         for k,v in x.items():
