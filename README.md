@@ -1,2 +1,2 @@
-# GamesWithHandDetection
+# GamesWithHandTracking
 Games using computer vision
