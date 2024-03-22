@@ -12,6 +12,7 @@ cx,cy = 250,250
 color = (64,133,210)
 counter = 0
 score=0
+timer=0
 total_time=10
 start_time=time.time()
 number= random.randint(1,5)
@@ -33,7 +34,7 @@ detector = HandDetector(detectionCon=0.8,maxHands=2)
 while True :
     success,img = cap.read()
 
-    if abs(int(total_time - (time.time() - start_time))) <= total_time:
+    if timer <= 10:
         hands, img = detector.findHands(img, draw=False)
         if hands:
             fingers = detector.fingersUp(hands[0])
@@ -102,7 +103,8 @@ while True :
         cv2.waitKey(1)
 
         #HUD
-        cvzone.putTextRect(img ,f'Timer : {abs(int(total_time -( time.time() - start_time)))}',(1000,75),scale=2,colorR=(0,0,255))
+        timer= abs(int(total_time - (time.time() - start_time)))
+        cvzone.putTextRect(img ,f'Timer : {timer}',(1000,75),scale=2,colorR=(0,0,255))
         cvzone.putTextRect(img, f'Score:{score}', (100, 75), scale=2,colorR=(0,0,255))
     else:
         cv2.putText(img,f'Score :{score}',(500,300),cv2.FONT_HERSHEY_SIMPLEX,2,(0,0,200),5)
@@ -116,8 +118,10 @@ while True :
     if key == ord('r'):
         counter = 0
         score = 0
-        total_time = 10
+        total_time = 0
+        timer=0
         start_time = time.time()
+        current_time=0
     #Quit the Game
     elif key == ord('q'):
         cv2.destroyAllWindows()
