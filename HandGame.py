@@ -63,6 +63,7 @@ while True :
                 case 3:
 
                     if fingers.count(1) == 3:
+                        color = (0, 255, 0)
                         counter = 1
 
                 case 4:
@@ -91,7 +92,7 @@ while True :
                     cx = random.randint(100,1100)
                     cy = random.randint(100,600)
 
-            #Button
+        #Button
         cv2.putText(img,f"{number}",(cx-50,cy),cv2.FONT_HERSHEY_SIMPLEX,1,(15,37,144),2,cv2.LINE_AA)
         cv2.circle(img,(cx,cy),30,color,cv2.FILLED)
         cv2.circle(img, (cx, cy), 10,(255,255,255), cv2.FILLED)
@@ -99,8 +100,8 @@ while True :
         cv2.circle(img, (cx, cy), 30, (0,0,0), 2)
         cv2.imshow("Image",img)
         cv2.waitKey(1)
-        #HUD(Head up display)
 
+        #HUD
         cvzone.putTextRect(img ,f'Timer : {abs(int(total_time -( time.time() - start_time)))}',(1000,75),scale=2,colorR=(0,0,255))
         cvzone.putTextRect(img, f'Score:{score}', (100, 75), scale=2,colorR=(0,0,255))
     else:
@@ -109,15 +110,15 @@ while True :
         cvzone.putTextRect(img, ' press "R" to Play Again / Q to Quit ', (600, 500), scale=2,colorR=(0,0,255))
 
 
-
-
     cv2.imshow("Image",img)
     key =cv2.waitKey(1)
+    #Restart the Game
     if key == ord('r'):
         counter = 0
         score = 0
         total_time = 10
         start_time = time.time()
+    #Quit the Game
     elif key == ord('q'):
         cv2.destroyAllWindows()
         break
