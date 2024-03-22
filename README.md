@@ -1,2 +1,3 @@
-# HandMeasurmentForJewelry
-Measuring the hand to make a jewelry based on the person hand size.
+# Games using ComputerVision
+1- Are you Smarter Than a Chimpanzee (inspired By HumanBenchmark Game)
+2- Reaction time Game
