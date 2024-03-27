@@ -72,7 +72,7 @@ while start:
                 mp_drawing.draw_landmarks(
                     imgRGB, hand_landmarks, mp_hands.HAND_CONNECTIONS
                 )
-
+    print("")
     # Drawing the processed frame on screen
     frame = pygame.surfarray.make_surface(imgRGB).convert()
     frame = pygame.transform.flip(frame, False, False)
