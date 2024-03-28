@@ -1,30 +1,17 @@
 # Import
-import pygame
 import cv2 as cv
 import numpy as np
 import mediapipe as mp
 
-# Initialize
-pygame.init()
-
 # Create Window/Display
 width, height = 640, 480
-window = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Are You Smarter Than a Chimpanzee?")
 
 cap = cv.VideoCapture(0)
-cap.set(3, 1280)  # width
-cap.set(4, 720)  # height
-
-# Initialize Clock for FPS
-fps = 30
-clock = pygame.time.Clock()
+cap.set(4, 640)  # width
+cap.set(3, 480)  # height
 
 # Main loop
 start = True
-
-# Font
-font = pygame.font.SysFont("Arial", 20)
 
 # Score vars
 score = 4
@@ -34,99 +21,198 @@ squares = [
     {i: (np.random.randint(0, width), np.random.randint(0, height))}
     for i in range(1, score + 1)
 ]
-print(squares)
+last_number = 0
+game_over = False
+round_started = False
 # Hand detection
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hand = mp_hands.Hands(min_detection_confidence=0.3, min_tracking_confidence=0.3)
 xcl1, ycl1, xcl2, ycl2 = 0, 0, 0, 0
+
 # Hand coordinates list
 lml = []
 xl = []
 yl = []
 status = "closed"
 while start:
-    # Get Events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            start = False
-            pygame.quit()
 
     # Exit keybind
-    if event.type == pygame.QUIT or pygame.key.get_pressed()[pygame.K_ESCAPE]:
+    if cv.waitKey(1) & 0xFF == ord("e"):
         start = False
-
-    # Apply Logic
 
     # Frame conversion to and rgb image
     success, img = cap.read()
+    img = cv.flip(img, 1)
     imgRGB = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-    imgRGB = np.rot90(imgRGB)
-    imgRGB = np.ascontiguousarray(imgRGB)
+    if not game_over:
+        # Detecting hands and drawing landmarks
+        res = hand.process(imgRGB)
+        if res.multi_hand_landmarks:
+            for hand_landmarks in res.multi_hand_landmarks:
+                if status == "open":
+                    mp_drawing.draw_landmarks(
+                        img, hand_landmarks, mp_hands.HAND_CONNECTIONS
+                    )
 
-    # Detecting hands and drawing landmarks
-    res = hand.process(imgRGB)
-    if res.multi_hand_landmarks:
-        for hand_landmarks in res.multi_hand_landmarks:
-            if status == "open":
-                mp_drawing.draw_landmarks(
-                    imgRGB, hand_landmarks, mp_hands.HAND_CONNECTIONS
-                )
-    print("")
-    # Drawing the processed frame on screen
-    frame = pygame.surfarray.make_surface(imgRGB).convert()
-    frame = pygame.transform.flip(frame, False, False)
-    window.blit(frame, (0, 0))
+        # Hand coordination stuff
+        if res.multi_hand_landmarks != None:
+            # Seeing if the hand is closed or open by checking if the tip (point 8) of the index finger
+            # is below the dip (point 7) of the index finger
+            for lm in res.multi_hand_landmarks:
+                xcl1, ycl1 = hand_landmarks.landmark[7].x, hand_landmarks.landmark[7].y
+                xcl2, ycl2 = hand_landmarks.landmark[8].x, hand_landmarks.landmark[8].y
+            if ycl2 > ycl1:
+                status = "closed"
+            else:
+                status = "open"
 
-    # Hand coordination stuff
-    if res.multi_hand_landmarks != None:
-        # Seeing if the hand is closed or open by checking if the tip (point 8) of the index finger
-        # is below the dip (point 7) of the middle finger
-        for lm in res.multi_hand_landmarks:
-            xcl1, ycl1 = hand_landmarks.landmark[7].x, hand_landmarks.landmark[7].y
-            xcl2, ycl2 = hand_landmarks.landmark[8].x, hand_landmarks.landmark[8].y
-        if ycl2 > ycl1:
-            status = "closed"
+            # Scaling index finger coordinates to pixels
+            xcl2, ycl2 = xcl2 * width, ycl2 * height
+        if not round_started:
+            img = cv.putText(
+                img,
+                org=(200, 20),
+                text="Press 's' to hide the numbers and start",
+                color=(255, 0, 0),
+                thickness=2,
+                fontScale=0.7,
+                fontFace=cv.FONT_HERSHEY_SIMPLEX,
+            )
+        # Start round with 's'
+        if cv.waitKey(1) & 0xFF == ord("s") and not round_started:
+            round_started = True
+        # Display numbers
+        # Looping through numbers
+        for x in squares:
+            for k, v in x.items():
+                # Displaying the number on screen
+                if not round_started:
+                    img = cv.putText(
+                        img,
+                        text=str(k),
+                        org=(v[0], v[1]),
+                        color=(0, 0, 255),
+                        thickness=2,
+                        fontScale=0.7,
+                        fontFace=cv.FONT_HERSHEY_SIMPLEX,
+                    )
+                if round_started:
+                    img = cv.rectangle(
+                        img,
+                        pt1=(v[0], v[1]),
+                        pt2=(v[0] + 20, v[1] - 25),
+                        color=(0, 0, 255),
+                        thickness=-1,
+                    )
+                    # Checking if the finger is inside the numbers' hitboxes
+                    if (
+                        cv.pointPolygonTest(
+                            np.array(
+                                [
+                                    [v[0], v[1]],
+                                    [v[0], v[1] - 25],
+                                    [v[0] + 25, v[1] - 25],
+                                    [v[0] + 25, v[1]],
+                                ],
+                                dtype=np.int32,
+                            ),
+                            (xcl2, ycl2),
+                            False,
+                        )
+                        == 1
+                    ) and status == "open":
+
+                        # If the finger is inside and the number is equal to last_number + 1 we remove the number from the list
+                        if k != last_number + 1:
+                            game_over = True
+                            print(k, last_number)
+                        else:
+                            print("removed", x, "index was at", xcl2, ycl2)
+                            squares.remove(x)
+                            last_number += 1
+
+        # If you won ( the list becomes empty) we add 1 to score and repeat
+        if not squares:
+            img = cv.putText(
+                img,
+                org=(0, 240),
+                text="Press 'n' to start the next round",
+                color=(255, 0, 0),
+                thickness=2,
+                fontScale=0.7,
+                fontFace=cv.FONT_HERSHEY_SIMPLEX,
+            )
+            if cv.waitKey(1) & 0xFF == ord("n"):
+                score += 1
+                last_number = 0
+                squares = [
+                    {i: (np.random.randint(0, width), np.random.randint(0, height))}
+                    for i in range(1, score + 1)
+                ]
+                round_started = False
+        # Showing score and index finger coordinates
+        img = cv.putText(
+            img,
+            org=(0, 20),
+            text="score : " + str(score) + " " + status,
+            color=(255, 0, 0),
+            thickness=2,
+            fontScale=0.7,
+            fontFace=cv.FONT_HERSHEY_SIMPLEX,
+        )
+        img = cv.putText(
+            img,
+            org=(0, 40),
+            text="x : " + format(xcl2, ".0f") + " y : " + format(ycl2, ".0f"),
+            color=(255, 0, 0),
+            thickness=2,
+            fontScale=0.7,
+            fontFace=cv.FONT_HERSHEY_SIMPLEX,
+        )
+    # ---------game-over-stuff---------------------------------
+    if game_over:
+        if score > 9:
+            img = cv.putText(
+                img,
+                org=(0, 240),
+                text="You are smarter than a chimpanzee ,your score is "
+                + str(score)
+                + " :)",
+                color=(0, 255, 0),
+                thickness=2,
+                fontScale=0.7,
+                fontFace=cv.FONT_HERSHEY_SIMPLEX,
+            )
         else:
-            status = "open"
-        # Printing the hand's coodrinates
-        for id, lm in enumerate(res.multi_hand_landmarks[0].landmark):
-            h, w, _ = img.shape
-            xc, yc = int(lm.y * h), int(lm.x * w)
-            lml.append([id, xc, yc])
-            # xl.append(xc)
-            # yl.append(yc)
-            # print(int(xcl2 * height), int(ycl2 * width), " ", status, " ", squares)
-    # Display number squares
-    for x in squares:
-        for k, v in x.items():
-            print(
-                int(xcl2 * height),
-                int(ycl2 * width),
-                " ",
-                list(squares[0].values())[0][0],
-                list(squares[0].values())[0][1],
+            img = cv.putText(
+                img,
+                org=(0, 240),
+                text="Chimpanzees score up to 9",
+                color=(255, 0, 0),
+                thickness=2,
+                fontScale=0.7,
+                fontFace=cv.FONT_HERSHEY_SIMPLEX,
             )
-            if (
-                v[0] <= xcl2 * height <= v[0] + 20 or v[1] <= ycl2 * width <= v[1] + 20
-            ) and status == "open":
-                print("removed", x)
-                squares.remove(x)
-            pygame.draw.rect(
-                surface=window,
-                color="white",
-                rect=pygame.Rect(v[1], v[0], 20, 20),
-                border_radius=2,
+            img = cv.putText(
+                img,
+                org=(0, 260),
+                text="but don't worry you're still smarter than them",
+                color=(255, 0, 0),
+                thickness=2,
+                fontScale=0.7,
+                fontFace=cv.FONT_HERSHEY_SIMPLEX,
             )
-            squareText = font.render(str(k), True, (0, 0, 255))
-            window.blit(squareText, (v[1], v[0]))
-
-    # Score
-    scoreText = font.render("score : " + str(score) + " " + status, True, (0, 0, 255))
-    window.blit(scoreText, (0, 0))
-
-    # Update Display
-    pygame.display.update()
-
-    # Set FPS
-    clock.tick(fps)
+            img = cv.putText(
+                img,
+                org=(0, 280),
+                text="your score is " + str(score) + " :)",
+                color=(255, 0, 0),
+                thickness=2,
+                fontScale=0.7,
+                fontFace=cv.FONT_HERSHEY_SIMPLEX,
+            )
+    # Drawing the processed frame on screen
+    cv.imshow("Are you smarter than a chimpanzee ?", img)
+cap.release()
+cv.destroyAllWindows()
