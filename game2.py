@@ -3,9 +3,10 @@ import numpy as np
 import mediapipe as mp
 
 def play_game2():
-    # Initialize variables and setup
+
+
     width, height = 640, 480
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture(1)
     cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter.fourcc('M', 'J', 'P', 'G'))
     start = True
     score = 4
@@ -176,12 +177,13 @@ def play_game2():
                 img = cv.putText(
                     img,
                     org=(0, 260),
-                    text="but don't worry you're still smarter than them",
+                    text="but don't worry you're still smarter than them press Q to quit",
                     color=(255, 0, 0),
                     thickness=2,
                     fontScale=0.7,
                     fontFace=cv.FONT_HERSHEY_SIMPLEX,
                 )
+                
                 img = cv.putText(
                     img,
                     org=(0, 280),
@@ -191,7 +193,8 @@ def play_game2():
                     fontScale=0.7,
                     fontFace=cv.FONT_HERSHEY_SIMPLEX,
                 )
-
+                if cv.waitKey(1) & 0xFF == ord('q'):
+                    break
         cv.imshow("Game 2: Number Recognition", img)
 
     cap.release()
