@@ -3,6 +3,8 @@
 ## Description
 * First game is a reaction time test where you need to raise the right amount of fingers in a limited time span to get a higher score
 * Second game is a spin on the game 'are you smarter than a chimpanzee' from https://humanbenchmark.com/tests/chimp where you need to memorize some numbers on the screen such that when they're hidden you have to hover over them with the tip of your index finger in the right order 
+## Important note
+### if the camera doesn't work change the cv2.videocapture() value to 0 or 1 or whatever your camera's index is
 ## Getting Started
 ### Dependencies
 * Python
