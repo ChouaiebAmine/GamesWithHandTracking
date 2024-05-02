@@ -15,7 +15,7 @@ def display_menu(img):
 
 def main():
     window_name = "Main Menu"
-    img = np.zeros((400, 800, 3), dtype=np.uint8)
+    img = np.zeros((720,1280 , 3), dtype=np.uint8)
     img = display_menu(img)
 
     while True:
@@ -25,11 +25,11 @@ def main():
         if key == ord('1'):
             cv2.destroyWindow(window_name)
             game1.play_game1()  # Call the play_game1() function from game1.py
-            img = display_menu(np.zeros((400, 800, 3), dtype=np.uint8))
+            img = display_menu(np.zeros((720,1280 , 3), dtype=np.uint8))
         elif key == ord('2'):
             cv2.destroyWindow(window_name)
             game2.play_game2()  # Call the play_game2() function from game2.py
-            img = display_menu(np.zeros((400, 800, 3), dtype=np.uint8))
+            img = display_menu(np.zeros((720,1280 , 3), dtype=np.uint8))
         elif key == ord('3'):
             print("Exiting...")
             break

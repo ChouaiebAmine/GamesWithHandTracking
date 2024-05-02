@@ -20,7 +20,7 @@ def play_game1():
     wrong_time = random.randint(0, 1)
 
     # Camera setup
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     cap.set(3, 1280)
     cap.set(4, 720)
 

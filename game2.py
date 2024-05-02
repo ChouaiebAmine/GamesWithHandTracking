@@ -5,8 +5,8 @@ import mediapipe as mp
 def play_game2():
 
 
-    width, height = 640, 480
-    cap = cv.VideoCapture(1)
+    width, height = 1280, 720
+    cap = cv.VideoCapture(0)
     cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter.fourcc('M', 'J', 'P', 'G'))
     start = True
     score = 4
